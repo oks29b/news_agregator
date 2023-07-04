@@ -3,6 +3,10 @@
 target
 build
 .gradle
+gradlew
+gradle
+gradlew.bat
+settings.gradle
 
 # Log file
 *.log

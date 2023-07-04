@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/rss
+    username: rss
+    password: rss
+  liquibase:
+    enabled: true
+    change-log: classpath:changelog/db.changelog-master.yaml
