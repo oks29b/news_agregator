@@ -1,4 +1,4 @@
-package news.agregator;
+package news.agregator.dto;
 
 import lombok.Builder;
 import lombok.Data;

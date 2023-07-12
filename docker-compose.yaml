@@ -1,10 +1,29 @@
-version: "3.0"
+version: '3.0'
 services:
+  java-app:
+    image: news-agregator
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8081"
+    environment:
+      - DATASOURCE_URL=jdbc:postgresql://postgres:5432/rss
+      - DATASOURCE_USERNAME=rss
+      - DATASOURCE_PASSWORD=rss
+
   postgres:
     image: postgres:13.3
     environment:
-      POSTGRES_DB: "rss"
-      POSTGRES_USER: "rss"
-      POSTGRES_PASSWORD: "rss"
+      - POSTGRES_DB=rss
+      - POSTGRES_USER=rss
+      - POSTGRES_PASSWORD=rss
+
+  elasticsearch:
+    image: elasticsearch:8.8.1
+    container_name: elasticsearch
     ports:
-      - "5432:5432"
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - cluster.name=elasticsearch
+
