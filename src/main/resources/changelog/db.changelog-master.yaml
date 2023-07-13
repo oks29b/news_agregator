@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: classpath:changelog/migrations/migration__V1_create_rss_table.sql
+  - include:
+      file: classpath:changelog/migrations/migration__V2_populate_rss.sql
