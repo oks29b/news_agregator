@@ -7,10 +7,7 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:changelog/db.changelog-master.yaml
-  elasticsearch:
-    uris: localhost:9200
-    connection-timeout: 1s
 
 schedule:
   interval:
-    period: 3600000
+    period: 60000

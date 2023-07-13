@@ -6,14 +6,13 @@ import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 import lombok.AllArgsConstructor;
-import news.agregator.dto.NewsDto;
+import lombok.extern.slf4j.Slf4j;
 import news.agregator.dto.RssDto;
+import news.agregator.entity.News;
 import news.agregator.mapper.RssMapper;
 import news.agregator.repository.NewsRepository;
 import news.agregator.repository.RssEntityRepository;
 import news.agregator.service.NewsManager;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -28,40 +27,39 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class NewsManagerImpl implements NewsManager {
     private final RssEntityRepository rssEntityRepository;
     private final RssMapper rssMapper;
     private final NewsRepository newsRepository;
 
-    @Override
     @Async
     @Scheduled(fixedRateString = "${schedule.interval.period}")
-    public List<NewsDto> findAllNews() {
+    public void findAllNews() {
         /**
          *  Получаем адреса rss из db
          */
 
+        log.info(LocalDateTime.now() + " started finding news, at this time count of news in ES = " + newsRepository.count());
         Map<String, String> sources = getSources();
-        List<NewsDto> newsDtos = new ArrayList<>();
+        List<News> newsList = new ArrayList<>();
 
         for(String rss : sources.values()){
             SyndFeed syndFeed = feedFromUrl(rss);
             if(syndFeed == null) continue;
             List<SyndEntry> entries = (List<SyndEntry>) syndFeed.getEntries();
             for(SyndEntry syndEntry : entries){
-                NewsDto newsDto = mapEntryToDto(syndEntry);
-                newsDtos.add(newsDto);
+                News news = mapEntryToDto(syndEntry);
+                newsList.add(news);
             }
         }
-        newsRepository.saveAll();
-        System.out.println(newsDtos);
-        System.out.println("________________" + LocalDateTime.now());
-        return newsDtos;
+        List<News> newsSaved = (List<News>)newsRepository.saveAll(newsList);
+        log.info(LocalDateTime.now() + " was saved news, at this time count of news in ES = " + newsRepository.count());
     }
 
-    private NewsDto mapEntryToDto(SyndEntry syndEntry){
-        return NewsDto.builder()
+    private News mapEntryToDto(SyndEntry syndEntry){
+        return News.builder()
                 .title(syndEntry.getTitle())
                 .description(syndEntry.getDescription() == null ? "" : syndEntry.getDescription().getValue())
                 .localDate(syndEntry.getPublishedDate())
@@ -95,10 +93,10 @@ public class NewsManagerImpl implements NewsManager {
             XmlReader reader = new XmlReader(conn); // reader из пакета rome
             return new SyndFeedInput().build(reader);
         } catch (IOException e) {
-            System.out.println("failed to connect - " + url + " skipped");
+            log.info("failed to connect - " + url + " skipped");
             return null;
         } catch (FeedException | NullPointerException e) {
-            System.out.println("failed to parse response from - " + url + " skipped");
+            log.info("failed to parse response from - " + url + " skipped");
             return null;
         }
     }
