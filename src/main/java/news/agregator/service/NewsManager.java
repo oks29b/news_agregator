@@ -1,5 +1,10 @@
 package news.agregator.service;
 
+import news.agregator.entity.News;
+import news.agregator.sources.Sources;
+
+import java.util.List;
+
 public interface NewsManager {
-    void findAllNews();
+    List<News> findAllNews();
 }

@@ -10,4 +10,8 @@ spring:
 
 schedule:
   interval:
-    period: 60000
+    period: 6000
+
+elasticsearch:
+  host: 188.120.235.150:9200
+  sockettimeout: 6000
