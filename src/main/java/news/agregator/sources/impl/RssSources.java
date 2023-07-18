@@ -38,23 +38,32 @@ public class RssSources implements Sources {
         /**
          *  Получаем адреса rss из db
          */
-
         Map<String, String> sources = findSources();
-        List<News> newsList = new ArrayList<>();
 
-        for(String rss : sources.values()){
-            log.info(LocalDateTime.now() + " started finding news from url = " + rss);
-            SyndFeed syndFeed = feedFromUrl(rss);
-            if(syndFeed == null) continue;
-            List<SyndEntry> entries = (List<SyndEntry>) syndFeed.getEntries();
-            for(SyndEntry syndEntry : entries){
-                News news = mapEntryToEntity(syndEntry);
-                newsList.add(news);
-            }
-            log.info(LocalDateTime.now() + " completed finding news from url = " + rss);
+        // Создаем CompletableFuture для каждого URL и запускаем их асинхронное чтение
+        List<CompletableFuture<News>> futureList = sources.values().stream()
+                .map(this::readNews)
+                .collect(Collectors.toList());
+        // Комбинируем все CompletableFuture и возвращаем список прочитанных новостей
+        return CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futureList.stream()
+                        .map(CompletableFuture::join)
+                        .collect(Collectors.toList()));
+    }
+
+    @Async
+    public CompletableFuture<News> readNews(String rss) {
+        News news = new News();
+        log.info(LocalDateTime.now() + " started finding news from url = " + rss);
+        SyndFeed syndFeed = feedFromUrl(rss);
+//            if(syndFeed == null) continue;
+        List<SyndEntry> entries = (List<SyndEntry>) syndFeed.getEntries();
+        for(SyndEntry syndEntry : entries){
+             news = mapEntryToEntity(syndEntry);
         }
+        log.info(LocalDateTime.now() + " completed finding news from url = " + rss);
 
-        return CompletableFuture.completedFuture(newsList);
+        return CompletableFuture.completedFuture(news);
     }
 
     /**
