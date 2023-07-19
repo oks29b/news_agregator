@@ -1,18 +1,18 @@
-package news.agregator.sources.impl;
+package news.agregator.service.impl;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import news.agregator.entity.News;
 import news.agregator.entity.RssEntity;
 import news.agregator.repository.RssEntityRepository;
-import news.agregator.sources.Sources;
+import news.agregator.service.NewsFetcher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URL;
@@ -24,46 +24,61 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
-public class RssSources implements Sources {
+@Service
+public class RssNewsFetcher implements NewsFetcher {
     private final RssEntityRepository rssEntityRepository;
 
-    @Override
-    @Async
-    public CompletableFuture<List<News>> getSources() {
-        /**
-         *  Получаем адреса rss из db
-         */
-        Map<String, String> sources = findSources();
+    private final NewsFetcher newsFetcher;
 
-        // Создаем CompletableFuture для каждого URL и запускаем их асинхронное чтение
-        List<CompletableFuture<News>> futureList = sources.values().stream()
-                .map(this::readNews)
-                .collect(Collectors.toList());
-        // Комбинируем все CompletableFuture и возвращаем список прочитанных новостей
-        return CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futureList.stream()
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.toList()));
+    public RssNewsFetcher(RssEntityRepository rssEntityRepository, @Lazy NewsFetcher newsFetcher) {
+        this.rssEntityRepository = rssEntityRepository;
+        this.newsFetcher = newsFetcher;
+    }
+
+    @Override
+    public List<News> getNews() {
+        Map<String, String> rss = findSources();
+        List<CompletableFuture<List<News>>> futureList = rss.values().stream()
+                .map(newsFetcher::readNews)
+                .toList();
+        CompletableFuture.allOf(futureList.toArray(new CompletableFuture[0])).join();
+
+        List<News> list = new ArrayList<>();
+        for (CompletableFuture<List<News>> listCompletableFuture : futureList) {
+            List<News> news;
+            try {
+                news = listCompletableFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                continue;
+            }
+            if(news != null) {
+                list.addAll(news);
+            }
+        }
+        return list;
     }
 
     @Async
-    public CompletableFuture<News> readNews(String rss) {
-        News news = new News();
+    @Override
+    public CompletableFuture<List<News>> readNews(String rss) {
+        long start = System.currentTimeMillis();
         log.info(LocalDateTime.now() + " started finding news from url = " + rss);
+
+        List<News> newsList = new ArrayList<>();
         SyndFeed syndFeed = feedFromUrl(rss);
-//            if(syndFeed == null) continue;
+        if(syndFeed == null) return null;
         List<SyndEntry> entries = (List<SyndEntry>) syndFeed.getEntries();
         for(SyndEntry syndEntry : entries){
-             news = mapEntryToEntity(syndEntry);
+            newsList.add(mapEntryToEntity(syndEntry));
         }
-        log.info(LocalDateTime.now() + " completed finding news from url = " + rss);
+        long diffTime = System.currentTimeMillis() - start;
+        log.info("completed in {} ms finding news from url = {}", diffTime, rss);
 
-        return CompletableFuture.completedFuture(news);
+        return CompletableFuture.completedFuture(newsList);
     }
 
     /**

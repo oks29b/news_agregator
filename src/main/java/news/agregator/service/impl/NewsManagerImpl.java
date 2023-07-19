@@ -4,36 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import news.agregator.entity.News;
 import news.agregator.repository.NewsRepository;
+import news.agregator.service.NewsFetcher;
 import news.agregator.service.NewsManager;
-import news.agregator.sources.Sources;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
 
 @Service
 @Slf4j
 @AllArgsConstructor
 public class NewsManagerImpl implements NewsManager {
-    private final Sources sources;
+    private final NewsFetcher newsFetcher;
     private final NewsRepository newsRepository;
     @Override
     @Async
     @Scheduled(fixedRateString = "${schedule.interval.period}")
     public void findAllNews(){
         log.info(LocalDateTime.now() + " started finding news, at this time count of news to elasticsearch = " + newsRepository.count());
-        CompletableFuture<List<News>> listCompletableFuture = sources.getSources();
-        List<News> news = new ArrayList<>();
-        try{
-            news = (List<News>)newsRepository.saveAll(
-                    listCompletableFuture.get().stream().toList());
-        }catch (Throwable e){
-            System.out.println(e.getCause());
-        }
+
+        List<News> news = newsFetcher.getNews().stream()
+                .filter(Objects::nonNull)
+                .toList();
+
+        newsRepository.saveAll(news);
 
         log.info(LocalDateTime.now() + " was saved news, at this time count of news in elasticsearch = " + newsRepository.count());
     }

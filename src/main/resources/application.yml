@@ -10,7 +10,7 @@ spring:
 
 schedule:
   interval:
-    period: 6000
+    period: 60000
 
 executor:
   corepoolsize: 10
