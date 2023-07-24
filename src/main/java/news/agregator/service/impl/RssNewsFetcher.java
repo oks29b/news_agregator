@@ -55,7 +55,7 @@ public class RssNewsFetcher implements NewsFetcher {
             } catch (InterruptedException | ExecutionException e) {
                 continue;
             }
-            if(news != null) {
+            if (news != null) {
                 list.addAll(news);
             }
         }
@@ -70,9 +70,9 @@ public class RssNewsFetcher implements NewsFetcher {
 
         List<News> newsList = new ArrayList<>();
         SyndFeed syndFeed = feedFromUrl(rss);
-        if(syndFeed == null) return null;
+        if (syndFeed == null) return null;
         List<SyndEntry> entries = (List<SyndEntry>) syndFeed.getEntries();
-        for(SyndEntry syndEntry : entries){
+        for (SyndEntry syndEntry : entries) {
             newsList.add(mapEntryToEntity(syndEntry));
         }
         long diffTime = System.currentTimeMillis() - start;
@@ -91,7 +91,7 @@ public class RssNewsFetcher implements NewsFetcher {
                         RssEntity::getLink));
     }
 
-    private News mapEntryToEntity(SyndEntry syndEntry){
+    private News mapEntryToEntity(SyndEntry syndEntry) {
         return News.builder()
                 .title(syndEntry.getTitle())
                 .description(syndEntry.getDescription() == null ? "" : syndEntry.getDescription().getValue())

@@ -20,10 +20,11 @@ import java.util.Objects;
 public class NewsManagerImpl implements NewsManager {
     private final NewsFetcher newsFetcher;
     private final NewsRepository newsRepository;
+
     @Override
     @Async
     @Scheduled(fixedRateString = "${schedule.interval.period}")
-    public void findAllNews(){
+    public void findAllNews() {
         log.info(LocalDateTime.now() + " started finding news, at this time count of news to elasticsearch = " + newsRepository.count());
 
         List<News> news = newsFetcher.getNews().stream()

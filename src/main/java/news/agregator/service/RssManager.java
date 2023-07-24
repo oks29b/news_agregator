@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface RssManager {
     List<RssEntity> findAllRss();
+
     RssEntity addRss(RssDto rssDto);
+
     RssEntity removeRss(RssDto rssDto);
 }

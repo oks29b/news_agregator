@@ -7,5 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface NewsFetcher {
     List<News> getNews();
+
     CompletableFuture<List<News>> readNews(String rss);
 }

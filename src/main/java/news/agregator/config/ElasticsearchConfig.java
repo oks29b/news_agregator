@@ -13,16 +13,16 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
-    private String ELASTICSEARCH_URL;
+    private String elasticsearchUrl;
 
     @Value("${elasticsearch.sockettimeout}")
-    private String ELASTICSEARCH_SOCKETTIMEOUT;
+    private String elasticsearchSockettimeout;
 
     @Override
     public ClientConfiguration clientConfiguration() {
         return ClientConfiguration.builder()
-                .connectedTo(ELASTICSEARCH_URL)
-                .withSocketTimeout(Long.parseLong(ELASTICSEARCH_SOCKETTIMEOUT))
+                .connectedTo(elasticsearchUrl)
+                .withSocketTimeout(Long.parseLong(elasticsearchSockettimeout))
                 .build();
     }
 }

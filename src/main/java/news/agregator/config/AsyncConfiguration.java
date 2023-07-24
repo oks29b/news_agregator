@@ -12,12 +12,12 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class AsyncConfiguration {
     @Value("${executor.corepoolsize}")
-    private String COUNT_OF_THREADS;
+    private String countOfThreads;
 
     @Bean
-    public Executor taskExecutor(){
+    public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(Integer.parseInt(COUNT_OF_THREADS));
+        executor.setCorePoolSize(Integer.parseInt(countOfThreads));
         return executor;
     }
 }
