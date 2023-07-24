@@ -3,9 +3,7 @@
 target
 build
 .gradle
-gradlew
 gradle
-gradlew.bat
 settings.gradle
 
 # Log file
@@ -34,4 +32,3 @@ replay_pid*
 .idea
 
 #other
-!gradle/wrapper/gradle-wrapper.jar
