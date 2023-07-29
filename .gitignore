@@ -3,6 +3,7 @@
 target
 build
 .gradle
+settings.gradle
 
 # Log file
 *.log
@@ -15,6 +16,7 @@ build
 
 # Package Files #
 *.jar
+!gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -30,4 +32,3 @@ replay_pid*
 .idea
 
 #other
-!gradle/wrapper/gradle-wrapper.jar

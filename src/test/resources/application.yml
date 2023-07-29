@@ -1,0 +1,19 @@
+spring:
+#  data:
+#    elasticsearch:
+#      repositories:
+#        enabled: false
+  liquibase:
+    enabled: true
+    change-log: classpath:changelog/db.changelog-master.yaml
+
+schedule:
+  interval:
+    period: 60000
+
+executor:
+  corepoolsize: 10
+
+elasticsearch:
+  host: 188.120.235.150:9200
+  sockettimeout: 6000
