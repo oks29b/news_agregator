@@ -8,19 +8,21 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: set up jdk
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: gradle build
+        run: ./gradlew build
+      - name: docker build
+        run: docker build . -t  news_agregator
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_PASSWORD}}
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: oksi2233/news_agregator
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{steps.meta.outputs.tags}}
+      - name: docker push
+        run: docker push oksi2233/news_agregator
