@@ -1,7 +1,7 @@
 version: '3.0'
 services:
   java-app:
-    image: news-agregator
+    image: oksi2233/news_agregator
     depends_on:
       - postgres
       - elasticsearch
