@@ -1,8 +1,4 @@
 spring:
-#  data:
-#    elasticsearch:
-#      repositories:
-#        enabled: false
   liquibase:
     enabled: true
     change-log: classpath:changelog/db.changelog-master.yaml

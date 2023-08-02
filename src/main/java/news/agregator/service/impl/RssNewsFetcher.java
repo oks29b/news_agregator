@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @Service
 public class RssNewsFetcher implements NewsFetcher {
     private final RssEntityRepository rssEntityRepository;
-
     private final NewsFetcher newsFetcher;
 
     public RssNewsFetcher(RssEntityRepository rssEntityRepository, @Lazy NewsFetcher newsFetcher) {
