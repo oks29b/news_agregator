@@ -2,20 +2,64 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'checkstyle'
+    id 'org.springframework.boot' version '3.1.0'
+    id 'io.spring.dependency-management' version '1.1.0'
 }
 
 sourceCompatibility = '17'
+group = 'news.agregator'
+version = '0.1'
 
 repositories {
     mavenCentral()
+    mavenLocal()
+}
+
+java {
+    apply plugin: 'java'
+    sourceCompatibility = 17
+    targetCompatibility = 17
+}
+
+ext {
+    mapstructVersion = "1.5.5.Final"
+    lombokVersion = "1.18.20"
+    lombokMapstructBindingVersion = "0.2.0"
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation group: 'rome', name: 'rome', version: '1.0'
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.13.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.liquibase:liquibase-core:4.19.0'
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}", "org.projectlombok:lombok:${lombokVersion}", "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    testImplementation 'com.h2database:h2:2.2.220'
+    testImplementation 'org.mockito:mockito-core:5.4.0'
 }
 
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestCoverageVerification
+}
+
+jacocoTestReport {
+    reports {
+        html.destination (file ("${jacoco.reportsDirectory}/html"))
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect{
+            fileTree(dir: it, excludes: [
+                    "news/agregator/config",
+                    "news/agregator/mapper"
+            ])
+        }))
+    }
 }
 
 jacocoTestCoverageVerification {

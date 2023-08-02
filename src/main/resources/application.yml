@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/rss}
+    username: ${DATASOURCE_USERNAME:rss}
+    password: ${DATASOURCE_PASSWORD:rss}
+  liquibase:
+    enabled: true
+    change-log: classpath:changelog/db.changelog-master.yaml
+
+schedule:
+  interval:
+    period: 60000
+
+executor:
+  corepoolsize: 10
+
+elasticsearch:
+  host: 188.120.235.150:9200
+  sockettimeout: 6000
